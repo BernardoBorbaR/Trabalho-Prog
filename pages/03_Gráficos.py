@@ -1,4 +1,4 @@
-# --- INÍCIO DA MODIFICAÇÃO ---
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -45,7 +45,8 @@ df_filtrado = df[
 ]
 
 if paises_selecionados:
-    df_filtrado = df_filtrado[df_filtrado['countries'].dropna().apply(lambda x: any(p in x for p in paises_selecionados))]
+    mascara_paises = df_filtrado['countries'].fillna('').apply(lambda x: any(p in x for p in paises_selecionados))
+    df_filtrado = df_filtrado[mascara_paises]
 
 if df_filtrado.empty:
     st.warning("Nenhum dado encontrado com os filtros selecionados.")
@@ -72,7 +73,6 @@ else:
         title='Top 10 Países com Mais Produções',
         labels={'x': 'País', 'y': 'Quantidade de Títulos'}
     )
-    # CORREÇÃO DO AVISO: Trocando use_container_width por width
     col_graf1.plotly_chart(fig_bar_paises, width='stretch')
 
     df_tipos = df_filtrado['type'].value_counts()
@@ -82,7 +82,6 @@ else:
         values=df_tipos.values, 
         title='Proporção de Filmes vs. Séries de TV'
     )
-    # CORREÇÃO DO AVISO: Trocando use_container_width por width
     col_graf2.plotly_chart(fig_pie_tipos, width='stretch')
 
     df_generos = df_filtrado['listed_in'].dropna().str.split(', ').explode().value_counts().nlargest(10)
@@ -95,15 +94,11 @@ else:
         labels={'x': 'Quantidade de Títulos', 'y': 'Gênero'}
     )
     fig_bar_generos.update_layout(yaxis={'categoryorder':'total ascending'})
-    # CORREÇÃO DO AVISO: Trocando use_container_width por width
     st.plotly_chart(fig_bar_generos, width='stretch')
 
     df_filmes = df_filtrado[df_filtrado['type'] == 'Movie'].copy()
     
-    # --- CORREÇÃO DO ERRO FATAL APLICADA AQUI ---
-    # 1. Remove ' min' e converte para número de forma segura, transformando erros em NaN
     duration_numeric = pd.to_numeric(df_filmes['duration'].str.replace(' min', ''), errors='coerce')
-    # 2. Remove as linhas onde a conversão falhou (onde a duração agora é NaN)
     df_filmes = df_filmes.dropna(subset=['duration'])
     df_filmes['duration_min'] = duration_numeric.dropna().astype(int)
 
@@ -115,7 +110,6 @@ else:
         title='Duração dos Filmes por Ano de Lançamento',
         labels={'release_year': 'Ano de Lançamento', 'duration_min': 'Duração (minutos)'}
     )
-    # CORREÇÃO DO AVISO: Trocando use_container_width por width
     st.plotly_chart(fig_scatter, width='stretch')
 
     df_ano_adicionado = df_filtrado.groupby('year_added').size().reset_index(name='count')
@@ -127,6 +121,4 @@ else:
         labels={'year_added': 'Ano', 'count': 'Quantidade de Títulos'}
     )
     fig_line_ano.update_layout(xaxis=dict(rangeslider=dict(visible=True)))
-    # CORREÇÃO DO AVISO: Trocando use_container_width por width
     st.plotly_chart(fig_line_ano, width='stretch')
-# --- FIM DA MODIFICAÇÃO ---

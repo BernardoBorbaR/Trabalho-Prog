@@ -14,8 +14,6 @@ def carregar_dados():
     
     df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
 
-    # --- CORREÇÃO APLICADA AQUI ---
-    # Normaliza a data para meia-noite, removendo a precisão de tempo que causa o erro do Arrow.
     df['date_added'] = df['date_added'].dt.normalize()
     
     df.dropna(subset=['date_added'], inplace=True)
@@ -24,4 +22,3 @@ def carregar_dados():
     df['year_added'] = df['year_added'].astype(int)
 
     return df
-# --- FIM DA MODIFICAÇÃO ---
